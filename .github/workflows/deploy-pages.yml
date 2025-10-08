@@ -1,8 +1,9 @@
 name: Deploy site to GitHub Pages
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 permissions:
   contents: write
@@ -10,7 +11,7 @@ permissions:
   id-token: write
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -18,10 +19,21 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build --if-present
+
       - name: Deploy to gh-pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages
-          folder: '.'.
+          folder: 'dist'
           clean: true
           token: ${{ secrets.GITHUB_TOKEN }}
